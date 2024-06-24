@@ -7,11 +7,10 @@ const compression = require("compression");
 app.use(morgan("dev"));
 app.use(helmet());
 app.use(compression());
-// app.use(morgan("combined"));
-// app.use(morgan("common"));
-// app.use(morgan("short"));
-// app.use(morgan("tiny"));
 //init db
+require("./dbs/init.mongodb");
+const { checkOverloadConnect } = require("./helpers/check.connect");
+// checkOverloadConnect();
 //init router
 app.get("/", (req, res, next) => {
   const strCompress = "hello manhtranduc";
