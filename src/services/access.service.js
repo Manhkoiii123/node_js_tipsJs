@@ -1,7 +1,7 @@
 "use strict";
 
 const shopModel = require("../models/shop.model");
-const { generateKeyPairSync, createPublicKey } = require("crypto");
+const crypto = require("crypto");
 const bcrypt = require("bcrypt");
 const KeyTokenServices = require("./keyToken.service");
 const { createTokenPair } = require("../auth/authUtils");
@@ -36,43 +36,25 @@ class AccessService {
       });
 
       if (newShop) {
-        // tạo cho reftoken,accessToken
-        // create privateKey(tạo xong cho ng dùng ko lưu trong db), public key (lưu để verify token)
-        // nếu hacker truy cập được cái publickey cũng ko làm gì được vì ko có rivate key để sign token
-        const { privateKey, publicKey } = generateKeyPairSync("rsa", {
-          modulusLength: 4096,
-          publicKeyEncoding: {
-            type: "pkcs1", // là cái public key cryptoGraphy standards loại 1 là tiêu chuẩn cho bất đối xứng ngoài ra còn có pkcs8
-            format: "pem", // là 1 định dạng mã hóa dạng định phân trog bảo mật
-          },
-          privateKeyEncoding: {
-            type: "pkcs1", // là cái public key cryptoGraphy standards loại 1 là tiêu chuẩn cho bất đối xứng
-            format: "pem", // là 1 định dạng mã hóa dạng định phân trog bảo mật
-          },
-        }); //cấp cho ta 2 thuộc tinnhs 1 là thuật toán 2 là modulesLength
-
-        // console.log({ privateKey, publicKey }); // lưu vào collection KeyStore => tạo model keyotken
-
-        const publicKeyString = await KeyTokenServices.createKeyToken({
+        const privateKey = crypto.randomBytes(64).toString("hex");
+        const publicKey = crypto.randomBytes(64).toString("hex");
+        const keyStore = await KeyTokenServices.createKeyToken({
           userId: newShop._id,
           publicKey,
+          privateKey,
         });
-        console.log(
-          "🚀 ~ AccessService ~ signUp= ~ publicKeyString:",
-          typeof publicKeyString
-        );
 
-        if (!publicKeyString) {
+        if (!keyStore) {
           return {
             code: "xxxx",
-            message: "publicKeyString error",
+            message: "keyStore error",
           };
         }
-        const publicKeyObject = createPublicKey(publicKeyString);
+        // const publicKeyObject = createPublicKey(publicKeyString);
         // tạo ra 1 cặp token
         const tokens = await createTokenPair(
           { userId: newShop._id, email },
-          publicKeyObject,
+          publicKey,
           privateKey
         );
 
