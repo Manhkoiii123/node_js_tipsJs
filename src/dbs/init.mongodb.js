@@ -6,7 +6,7 @@ const {
 } = require("../configs/config.mongodb");
 const { countConnect } = require("../helpers/check.connect");
 const connectString = `${process.env.MONGODB_URL}${name}`;
-console.log("🚀 ~ connectString:", connectString);
+// console.log("🚀 ~ connectString:", connectString);
 class Database {
   constructor() {
     this.connect();
@@ -21,7 +21,8 @@ class Database {
         maxPoolSize: 100,
       })
       .then((_) =>
-        console.log("connect mongodb success promax", countConnect())
+        // console.log("connect mongodb success promax", countConnect())
+        console.log("connect mongodb success")
       )
       .catch((err) => console.log("connect error"));
   }
