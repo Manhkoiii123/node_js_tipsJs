@@ -72,7 +72,7 @@ class AccessService {
         // tạo ra 1 cặp token
         const tokens = await createTokenPair(
           { userId: newShop._id, email },
-          publicKeyString,
+          publicKeyObject,
           privateKey
         );
 
