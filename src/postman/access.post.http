@@ -2,9 +2,10 @@
 ### signup
 POST {{url_dev}}shop/signup
 Content-Type: application/json
+x-api-key: db76b505cf796cf63412b6d39514a6fc97fae837850e14a07689e2a40afb961d4daf991be4cfb97204026fd464f3ce414f6f822d9cf3f1c6a260b6ec5dfe525e
 
 {
     "name":"Shop ManhTd",
-    "email":"manh4@gmail.com",
+    "email":"manh5@gmail.com",
     "password":"manh123"
 }
