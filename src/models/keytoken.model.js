@@ -19,9 +19,15 @@ var keyTokenSchema = new Schema(
       type: String,
       required: true,
     },
-    refreshToken: {
+    //những cái refTOken đã sử dụng
+    refreshTokensUsed: {
       type: Array,
       default: [],
+    },
+    refreshToken: {
+      // cái đang dùng
+      type: String,
+      required: true,
     },
   },
   {
