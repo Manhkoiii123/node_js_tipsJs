@@ -101,20 +101,21 @@ class AccessService {
       );
 
       return {
-        code: 201,
-        metadata: {
-          shop: getInfoData({
-            fields: ["_id", "name", "email"],
-            object: newShop,
-          }),
-          tokens,
-        },
+        shop: getInfoData({
+          fields: ["_id", "name", "email"],
+          object: newShop,
+        }),
+        tokens,
       };
     }
     return {
       code: 200,
       metadata: null,
     };
+  };
+  static logout = async (keyStore) => {
+    const delKey = await KeyTokenServices.removeKeyById(keyStore._id);
+    return delKey;
   };
 }
 module.exports = AccessService;
