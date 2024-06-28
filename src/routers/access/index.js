@@ -8,5 +8,5 @@ const router = express.Router();
 //sign up
 router.post("/shop/signup", asyncHandler(accessController.signUp));
 //sign in
-
+router.post("/shop/login", asyncHandler(accessController.login));
 module.exports = router;
