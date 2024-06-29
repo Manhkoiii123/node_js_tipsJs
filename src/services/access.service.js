@@ -4,9 +4,13 @@ const shopModel = require("../models/shop.model");
 const crypto = require("crypto");
 const bcrypt = require("bcrypt");
 const KeyTokenServices = require("./keyToken.service");
-const { createTokenPair } = require("../auth/authUtils");
+const { createTokenPair, verifyJWT } = require("../auth/authUtils");
 const { getInfoData } = require("../utils");
-const { BadRequestError, AuthFailureError } = require("../core/error.response");
+const {
+  BadRequestError,
+  AuthFailureError,
+  ForbiddenError,
+} = require("../core/error.response");
 const { findByEmail } = require("./shop.service");
 const RoleShop = {
   SHOP: "SHOP",
@@ -116,6 +120,63 @@ class AccessService {
   static logout = async (keyStore) => {
     const delKey = await KeyTokenServices.removeKeyById(keyStore._id);
     return delKey;
+  };
+
+  static handleRefreshToken = async (refreshToken) => {
+    //check token đã sử dụng chưa (trong model keyToken có refTokenUsed)
+    const foundKey = await KeyTokenServices.findByRefreshTokenUsed(
+      refreshToken
+    );
+    // nếu mà thấy => đưa vòa danh sách nghi vấn
+    //nếu mà ch thấy thì cấp lại acctoken mới
+    if (foundKey) {
+      //decode xem mày là thằng nào có trong hệ thống ko
+      // quay sang viết cái verify trogn authUtils
+      const { userId, email } = await verifyJWT(
+        refreshToken,
+        foundKey.privateKey
+      );
+      console.log("{ userId, email } [1] ::: ", { userId, email });
+      // xóa trước đã
+      // sang cái key service viết cái delete key
+      await KeyTokenServices.deleteKeyById(userId);
+      throw new ForbiddenError("Something wrong happend! Please relogin");
+    }
+    //chưa có
+    const holderToken = await KeyTokenServices.findByRefreshToken(refreshToken);
+    if (!holderToken) throw new AuthFailureError("Shop not registed 1");
+    //verify token này
+    const { userId, email } = await verifyJWT(
+      refreshToken,
+      holderToken.privateKey
+    );
+    console.log("{ userId, email } [2] ::: ", { userId, email });
+    //check user này có đúng ko
+    const foundShop = await findByEmail({ email });
+    if (!foundShop) throw new AuthFailureError("Shop not registed 2");
+    // cấp token mới và đưa vào ref vào cái đã sử dụng
+    const tokens = await createTokenPair(
+      {
+        userId,
+        email,
+      },
+      holderToken.publicKey,
+      holderToken.privateKey
+    );
+
+    //update token
+    await holderToken.updateOne({
+      $set: {
+        refreshToken: tokens.refreshToken,
+      },
+      $addToSet: {
+        refreshTokensUsed: refreshToken, // đã được sử dụng
+      },
+    });
+    return {
+      user: { userId, email },
+      tokens,
+    };
   };
 }
 module.exports = AccessService;

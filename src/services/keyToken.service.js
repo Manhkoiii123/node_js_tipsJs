@@ -50,7 +50,19 @@ class KeyTokenServices {
       .lean();
   };
   static removeKeyById = async (id) => {
-    return await keyTokenModel.deleteOne(id);
+    return await keyTokenModel.deleteOne(id).lean();
+  };
+
+  static findByRefreshTokenUsed = async (refToken) => {
+    return await keyTokenModel.findOne({ refreshTokensUsed: refToken }).lean();
+  };
+  static findByRefreshToken = async (refreshToken) => {
+    return await keyTokenModel.findOne({ refreshToken });
+  };
+  static deleteKeyById = async (userId) => {
+    return await keyTokenModel.deleteOne({
+      user: new mongoose.Types.ObjectId(userId),
+    });
   };
 }
 
