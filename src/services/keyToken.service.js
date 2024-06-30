@@ -45,9 +45,9 @@ class KeyTokenServices {
   };
 
   static findByUserId = async (userId) => {
-    return await keyTokenModel
-      .findOne({ user: new mongoose.Types.ObjectId(userId) })
-      .lean();
+    return await keyTokenModel.findOne({
+      user: new mongoose.Types.ObjectId(userId),
+    });
   };
   static removeKeyById = async (id) => {
     return await keyTokenModel.deleteOne(id).lean();

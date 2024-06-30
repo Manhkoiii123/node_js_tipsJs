@@ -178,5 +178,47 @@ class AccessService {
       tokens,
     };
   };
+  static handleRefreshToken2 = async ({ keyStore, user, refreshToken }) => {
+    // console.log("🚀 ~ handleRefreshToken2= ~ keyStore:", {
+    //   keyStore,
+    //   user,
+    //   refreshToken,
+    // });
+    const { userId, email } = user;
+    if (keyStore.refreshTokensUsed.includes(refreshToken)) {
+      await KeyTokenServices.deleteKeyById(userId);
+      throw new ForbiddenError("Something wrong happend! Please relogin");
+    }
+
+    if (keyStore.refreshToken !== refreshToken) {
+      // cái key.ref là cái đang dùng hợp lệ còn cái ref còn lại là người dùng đưa lên
+      throw new AuthFailureError("Shop not registed ");
+    }
+    //nếu đúng token
+    const foundShop = await findByEmail({ email });
+    if (!foundShop) throw new AuthFailureError("Shop not registed");
+    const tokens = await createTokenPair(
+      {
+        userId,
+        email,
+      },
+      keyStore.publicKey,
+      keyStore.privateKey
+    );
+
+    //update token
+    await keyStore.updateOne({
+      $set: {
+        refreshToken: tokens.refreshToken,
+      },
+      $addToSet: {
+        refreshTokensUsed: refreshToken, // đã được sử dụng
+      },
+    });
+    return {
+      user,
+      tokens,
+    };
+  };
 }
 module.exports = AccessService;
